@@ -88,10 +88,7 @@ export default {
         password:
             (value) => {
               const pattern = /^(?=.{8,})/
-              return (
-                pattern.test(value) ||
-                'Minimum 8 chars!'
-              )
+              return (pattern.test(value) || 'Minimum 8 chars!')
             }
       },
       user: {
