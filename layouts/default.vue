@@ -1,117 +1,151 @@
 <template>
-  <v-app dark>
+  <v-app>
+    <v-app-bar :clipped-left="clipped" app flat>
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+      <v-toolbar-title class="d-flex">
+        vue/rust webapp
+      </v-toolbar-title>
+      <v-spacer />
+    </v-app-bar>
     <v-navigation-drawer
       v-model="drawer"
+      :color="color"
+      :expand-on-hover="expandOnHover"
       :mini-variant="miniVariant"
-      :clipped="clipped"
-      fixed
+      :right="right"
       app
+      fixed
+      dark
     >
-      <v-list>
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-          :to="item.to"
-          router
-          exact
-        >
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title v-text="item.title" />
-          </v-list-item-content>
+      <v-list dense nav class="py-0">
+        <v-list-item v-if="user.image" :class="miniVariant && 'px-0'" two-line>
+          <v-list-item-avatar class="mx-0" v-on="on">
+            <img :src="user.image" alt="">
+          </v-list-item-avatar>
         </v-list-item>
+        <v-list-item v-if="!user.image" :class="miniVariant && 'px-0'" two-line>
+          <v-list-item-avatar class="mx-0">
+            <img src="/owl.png" alt="">
+          </v-list-item-avatar>
+        </v-list-item>
+        <v-divider />
+
+        <v-tooltip v-for="(item, i) in items" :key="i" right>
+          <template v-slot:activator="{ on }">
+            <v-list-item
+              :to="item.to"
+              router
+              exact
+              class="mt-4"
+            >
+              <v-list-item-icon>
+                <v-icon v-on="on">
+                  {{ item.icon }}
+                </v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title>{{ item.title }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+          <span>{{ item.title }}</span>
+        </v-tooltip>
       </v-list>
+      <template v-slot:append>
+        <v-list dense nav class="py-0">
+          <v-tooltip right>
+            <template v-slot:activator="{ on }">
+              <v-list-item to="logout" @click="logout">
+                <v-list-item-icon>
+                  <v-icon v-on="on">
+                    mdi-logout
+                  </v-icon>
+                </v-list-item-icon>
+              </v-list-item>
+            </template>
+            <span>Logout</span>
+          </v-tooltip>
+        </v-list>
+      </template>
     </v-navigation-drawer>
-    <v-app-bar
-      :clipped-left="clipped"
-      fixed
-      app
-    >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-btn
-        icon
-        @click.stop="miniVariant = !miniVariant"
-      >
-        <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        @click.stop="clipped = !clipped"
-      >
-        <v-icon>mdi-application</v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        @click.stop="fixed = !fixed"
-      >
-        <v-icon>mdi-minus</v-icon>
-      </v-btn>
-      <v-toolbar-title v-text="title" />
-      <v-spacer />
-      <v-btn
-        icon
-        @click.stop="rightDrawer = !rightDrawer"
-      >
-        <v-icon>mdi-menu</v-icon>
-      </v-btn>
-    </v-app-bar>
-    <v-main>
-      <v-container>
+    <v-content>
+      <v-container fluid>
         <nuxt />
       </v-container>
-    </v-main>
-    <v-navigation-drawer
-      v-model="rightDrawer"
-      :right="right"
-      temporary
-      fixed
-    >
-      <v-list>
-        <v-list-item @click.native="right = !right">
-          <v-list-item-action>
-            <v-icon light>
-              mdi-repeat
-            </v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Switch drawer (click me)</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-    <v-footer
-      :absolute="!fixed"
-      app
-    >
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+    </v-content>
+    <v-footer app>
+      <v-dialog v-model="dialog_data" scrollable max-width="600px">
+        <template v-slot:activator="{ on }">
+          <a v-on="on">Data protection</a>
+        </template>
+        <v-card>
+          <v-card-title>Data protection</v-card-title>
+          <v-divider class="pt-5" />
+          <v-card-text style="height: 300px;">
+            <DataProtection />
+          </v-card-text>
+          <v-divider />
+          <v-card-actions>
+            <v-btn color="blue darken-1" text @click="dialog_data = false">
+              Close
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-footer>
   </v-app>
 </template>
 
 <script>
+
+import DataProtection from '~/components/DataProtection.vue'
 export default {
+  components: {
+    DataProtection
+  },
   data () {
     return {
+      dialog_data: false,
+      bg: '',
+      expandOnHover: false,
+      miniVariant: false,
       clipped: false,
-      drawer: false,
+      drawer: true,
       fixed: false,
+      right: false,
+      user: [],
+      color: 'primary',
       items: [
         {
-          icon: 'mdi-apps',
-          title: 'Welcome',
-          to: '/'
-        },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire'
+          icon: 'mdi-account',
+          title: 'My Account',
+          to: '/users/me'
         }
       ],
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: 'Vuetify.js'
+      title: 'Webapp'
+    }
+  },
+  async created () {
+    const response = await this.$axios.$get('user/me')
+    this.user = response.data
+  },
+  methods: {
+    async logout () {
+      await this.$auth.logout()
     }
   }
 }
 </script>
+<style type="scss">
+  .toasted {
+    font-family: sans-serif !important;
+    text-transform: none;
+    font-weight: bold;
+    right: 10px;
+  }
+
+  .toasted-container.top-right {
+    top: 70px !important;
+    right: 1% !important;
+  }
+</style>

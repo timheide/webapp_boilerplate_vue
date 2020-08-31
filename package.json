@@ -11,7 +11,9 @@
     "lint": "npm run lint:js"
   },
   "dependencies": {
+    "@nuxtjs/auth": "^4.8.4",
     "@nuxtjs/axios": "^5.12.0",
+    "@nuxtjs/toast": "^3.3.0",
     "nuxt": "^2.14.0"
   },
   "devDependencies": {
